@@ -55,3 +55,114 @@ Actor-Critic method is the `combination between value-based and policy-based`. T
 $$A(s, a) = r + \gamma V(s'; w) - V(s; w) $$
 
 It uses the advantage reduces variance in policy gradient update. This approach handles `continuous or discrete` observation spaces and can applies both `continuous or discrete` in action spaces. Exploration comes from the randomness in policy $\pi$ often boosted by `entropy`. Exploitation is guided by the `critic`, helping the actor choose high-reward actions.  
+
+## **Part 2: Evaluate Cart-Pole Agent performance.**
+
+### **2.1 Compare result each algorithm**
+**Assumption:** Set hyperparameter for every algorithm as below
+```python
+# hyperparameters
+num_of_action = 7
+action_range = [-2.5, 2.5]  
+learning_rate = 0.01
+hidden_dim = 64
+n_episodes = 2000
+initial_epsilon = 1.0
+epsilon_decay = 0.99997  
+final_epsilon = 0.001
+discount = 0.95
+buffer_size = 100000
+batch_size = 64
+```
+
+![all_base](image/all_base.png)
+
+From image the best algorithm that can stabilize longest is `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` so we will test parameter that effect with this algorithm.
+
+### **2.2 How well the agent from `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` learns to receive higher rewards**
+
+#### 2.2.1 `REINFORCE (Monte Carlo Policy Gradient)`
+- `learning_rate`: adjust in step 0.01 (Orange), 0.005 (Green), 0.0001 (Blue)
+![reward_mc_lr_test](image/reward_mc_lr_test.png)
+From this test
+  - Increase `learning_rate`: learning faster but reward may swing more
+  - Decrease `learning_rate`: learning slower but reward swing less
+
+- `discount`: adjust in step 0.95 (Orange), 0.98 (Green), 0.99 (Blue)
+![reward_mc_df_test](image/reward_mc_df_test.png)
+From this test
+  - Increase `discount`: May slow convergence or make learning harder due to distant rewards being weighted heavily.
+
+  - Decrease `discount`: Agent focuses only on immediate reward → fails to balance pole long-term.
+
+
+#### 2.2.2 `Advantage Actor‑Critic (A2C)`
+
+### **2.3 How well the agent from `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` performs in the Cart-Pole problem**
+
+#### 2.3.1 `REINFORCE (Monte Carlo Policy Gradient)`
+![MC_base](image/MC_base.png)
+In `REINFORCE (Monte Carlo Policy Gradient)` when sum_reward > 400 Cart can stabilize pole and cart not move until out of rail. You can see it in video at below.
+
+https://github.com/user-attachments/assets/94754604-17bb-4050-a93b-0216224d15f6
+
+but when sum_reward drop under 400 Cart still can stabilize pole but cart start to move until out of rail.
+
+https://github.com/user-attachments/assets/f7d1f99f-e923-418d-b2ea-1a9a16d3136e
+
+This case is happen because...
+
+#### 2.3.2 `Advantage Actor‑Critic (A2C)`
+
+
+
+### **2.4 Which algorithm performs best?**
+From sum_reward graph. The algorithm that have the best performe is `Advantage Actor‑Critic (A2C)` 
+
+### **2.5 Why does `Advantage Actor‑Critic (A2C)` perform better than the others?**
+
+1. **Combines Strengths of Value & Policy-Based Methods**
+   
+    A2C is a hybrid of:
+
+    - Policy gradient (like REINFORCE)
+
+    - Value function estimation (like Q-learning)
+
+    By combining both, A2C:
+
+    - Directly optimizes the policy (like REINFORCE)
+
+    - Uses the value function to reduce variance (unlike REINFORCE)
+
+    - This means more stable updates and better learning efficiency.
+
+2. **Uses Advantage Function**
+
+    Instead of using the full return like REINFORCE, A2C uses:
+
+    $$A(s, a) = r + \gamma V(s'; w) - V(s; w) $$
+
+    This "advantage" tells the agent how much better an action was compared to average, which:
+
+    - Helps focus on better-than-expected actions
+
+    - Reduces variance in updates
+
+    - Speeds up convergence
+
+3. **On-Policy and Synchronous Updates**
+   
+    A2C performs synchronous updates — all environments (or rollouts) contribute to a single update step. This:
+
+    - Keeps learning stable and consistent
+
+    - Improves performance on tasks like CartPole where fast, frequent learning from recent experience matters
+
+4. **Better Exploration Through Stochastic Policy**
+   
+    CartPole needs exploration, especially early on. A2C uses a stochastic policy:
+
+    - Not always picking the greedy action
+
+    - Enables smooth exploration without tricks like epsilon-greedy (used in Q-learning or DQN)
