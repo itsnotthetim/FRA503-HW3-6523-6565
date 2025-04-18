@@ -1,7 +1,29 @@
 # FRA503-HW3: Cart Pole [ HW3 ]
+
 Similar to the previous homework, this assignment focuses on the **Stabilizing Cart-Pole Task**, but using function approximation-based RL approaches instead of table-based RL approaches.
 
 Additionally, as in the previous homework, the `CartPole` extension repository includes configurations for the **Swing-up Cart-Pole Task** as an optional resource for students seeking a more challenging task.
+
+## Table of Contents
+- [FRA503-HW3: Cart Pole \[ HW3 \]](#fra503-hw3-cart-pole--hw3-)
+  - [Table of Contents](#table-of-contents)
+  - [Learning Objectives:](#learning-objectives)
+  - [Part 1: Understanding the Algorithm](#part-1-understanding-the-algorithm)
+    - [Linear Q-Learning](#linear-q-learning)
+    - [Deep Q-Network (DQN)](#deep-q-network-dqn)
+    - [REINFORCE (Monte Carlo Policy Gradient)](#reinforce-monte-carlo-policy-gradient)
+    - [Advantage Actor‑Critic (A2C)](#advantage-actorcritic-a2c)
+  - [**Part 2: Evaluate Cart-Pole Agent performance.**](#part-2-evaluate-cart-pole-agent-performance)
+    - [**2.1 Compare result each algorithm**](#21-compare-result-each-algorithm)
+    - [**2.2 How well the agent from `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` learns to receive higher rewards**](#22-how-well-the-agent-from-reinforce-monte-carlo-policy-gradient-and-advantage-actorcritic-a2c-learns-to-receive-higher-rewards)
+      - [2.2.1 `REINFORCE (Monte Carlo Policy Gradient)`](#221-reinforce-monte-carlo-policy-gradient)
+      - [2.2.2 `Advantage Actor‑Critic (A2C)`](#222-advantage-actorcritic-a2c)
+    - [**2.3 How well the agent from `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` performs in the Cart-Pole problem**](#23-how-well-the-agent-from-reinforce-monte-carlo-policy-gradient-and-advantage-actorcritic-a2c-performs-in-the-cart-pole-problem)
+      - [2.3.1 `REINFORCE (Monte Carlo Policy Gradient)`](#231-reinforce-monte-carlo-policy-gradient)
+      - [2.3.2 `Advantage Actor‑Critic (A2C)`](#232-advantage-actorcritic-a2c)
+    - [**2.4 Which algorithm performs best?**](#24-which-algorithm-performs-best)
+    - [**2.5 Why does `Advantage Actor‑Critic (A2C)` perform better than the others?**](#25-why-does-advantage-actorcritic-a2c-perform-better-than-the-others)
+
 
 ## Learning Objectives:
 1. Understand how **function approximation** works and how to implement it.
@@ -79,6 +101,14 @@ batch_size = 64
 
 From image the best algorithm that can stabilize longest is `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` so we will test parameter that effect with this algorithm.
 
+Before see how parameter effect with this algorithm. I will tell more about `Linear Q-Learning` and `Deep Q-Network (DQN)` 
+![reward_L_D](image/reward_L_D.png)
+![epsilon_L_D](image/epsilon_L_D.png)
+From above image the reward of both algorithm have characteristic like step function and it can not increase more that i think because
+- The agent discovered a decent strategy but not the best.
+- ε too small too soon
+
+
 ### **2.2 How well the agent from `REINFORCE (Monte Carlo Policy Gradient)` and `Advantage Actor‑Critic (A2C)` learns to receive higher rewards**
 
 #### 2.2.1 `REINFORCE (Monte Carlo Policy Gradient)`
@@ -113,11 +143,15 @@ https://github.com/user-attachments/assets/f7d1f99f-e923-418d-b2ea-1a9a16d3136e
 This case is happen because as you've seen the `sum_reward` which has some the lowest valley called **local optima**. My assumption goes to the initial state when it randomed the pole closes to the 0 radient and it can survive longer (get more reward). So the algorithm just has the strategy that only **good enough** but not exploring the **best strategy** (or the robust one). 
 
 From the loss graph show that when the sum_reward per episode is high, loss is low.
+![loss_MC](image/loss_MC.png)
 
 
 #### 2.3.2 `Advantage Actor‑Critic (A2C)`
 
 ![A2C_base](image/A2C_base.png)
+![actor_loss_A2C](image/actor_loss_A2C.png)
+![critic_loss](image/critic_loss.png)
+![loss](image/loss.png)
 
 https://github.com/user-attachments/assets/19f0eb07-e47c-4412-be3c-08737f9b5b55
 
@@ -135,6 +169,8 @@ Critic‑loss and total‑loss spike into the thousands, then begin to slope dow
 From sum_reward graph. The algorithm that have the best performe is `Advantage Actor‑Critic (A2C)` 
 
 ### **2.5 Why does `Advantage Actor‑Critic (A2C)` perform better than the others?**
+
+In video you will see `Advantage Actor‑Critic (A2C)` and `REINFORCE (Monte Carlo Policy Gradient)` it perform likely. I think the problem is that the rewards and de-rewards do not cover the location of the cart. but the reward in A2C it increase more and stable MC, I think if we can fix the ploblem that i told it can perform better. So the more advantage of A2C is
 
 1. **Combines Strengths of Value & Policy-Based Methods**
    
