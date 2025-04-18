@@ -1,167 +1,57 @@
-# CartPole
+# FRA503-HW3: Cart Pole [ HW3 ]
+Similar to the previous homework, this assignment focuses on the **Stabilizing Cart-Pole Task**, but using function approximation-based RL approaches instead of table-based RL approaches.
+
+Additionally, as in the previous homework, the `CartPole` extension repository includes configurations for the **Swing-up Cart-Pole Task** as an optional resource for students seeking a more challenging task.
+
+## Learning Objectives:
+1. Understand how **function approximation** works and how to implement it.
+
+2. Understand how **policy-based RL** works and how to implement it.
+
+3. Understand how advanced RL algorithms balance exploration and exploitation.
+
+4. Be able to differentiate RL algorithms based on stochastic or deterministic policies, as well as value-based, policy-based, or Actor-Critic approaches. 
+
+5. Gain insight into different reinforcement learning algorithms, including Linear Q-Learning, Deep Q-Network (DQN), the REINFORCE algorithm, and the Actor-Critic algorithm. Analyze their strengths and weaknesses.
+
+
+## Part 1: Understanding the Algorithm
  
-## Overview
-This repository contains files related to the `CartPole` task, which will be used for Homework 2 and Homework 3. It includes environment configurations, RL algorithms, and training scripts to support reinforcement learning experiments.
+ ### Linear Q-Learning
+ Linear Q-Learning is a `value-based` method that approximates the action-value function $ Q(s, a)$ in every state and action, and store the Q-value in table as a linear combination of feature vector $ \phi(s, a) $. The policy is `deterministic` and select an optimal action by maximizing the action-value function illustrated as below 
 
+ $$ a^* = \arg\max_a Q(s, a) $$
 
-The repository provided in this homework is a custom IsaacLab extension, created from [IsaacLabExtensionTemplate](https://github.com/isaac-sim/IsaacLabExtensionTemplate). Please refer to this repository for more detailed information.
+ and an $\epsilon$-greedy variant thereof the exploration because it's the linear approximation. The **observation space** is `continuous` (joint limit in radian) while the *action space* is `discrete` for maximizing step. The exploration and exploitation is balanced by adjusting an $\epsilon$ decayed in **$\epsilon$-greedy policy**.
 
-## Installation
+ ### Deep Q-Network (DQN)
+ DQN is the Q-Learning (`value-based`) that use neural network to approximates the action-value function $ Q(s, a)$ instead of storing all the Q-value in table. The policy is `deterministic` greedy for exploitation; $\epsilon$-greedy bahaviour during learning and at the test time the agent select an optimal action by maximizing the action-value function illustrated as below 
+ $$ a^* = \arg\max_a Q(s, a) $$
 
-- navigate to the `CartPole_4.5.0/` directory by running:
+while training injects stochastic exploration by taking a random action with probability $\epsilon$
 
-    ```
-    cd CartPole_4.5.0/
-    ```
-- Using a python interpreter (conda) that has Isaac Lab installed, install the library
+The *observation space *is `continuous` which high/low-dimensional features are also work. The *action space* is only `discrete` which produces one scalar value per action. And the **balancing exploration and exploitation** with three components consist of **$\epsilon$-greedy decayed** from a large value to a small floor to focus on exploration and exploitation, **experience replay buffer** by storing past transition $(s, a, r, s')$ to re‑use rare but informative experiences, improving both exploration coverage and data efficiency. and **target network** to stabilize learning by copied set of parameter provides a slowly changing boostrap target  so that the greedy policy exploits estimates rather than oscillating ones.
 
-    ```
-    python -m pip install -e ./source/CartPole
-    ```
+### REINFORCE (Monte Carlo Policy Gradient)
+REINFORCE is a policy‑based Monte Carlo algorithm that directly optimizes a stochastic policy $ \pi(a \mid s; \theta)$ by performing gradient ascent on the expected return:
 
-- Verify that the extension is correctly installed by running the following command to print all the available environments in the extension:
+$$\nabla_{\theta} J(\theta) = \mathbb{E} \left[ \nabla_{\theta} \log \pi(a \mid s; \theta) G_t \right]
+$$
 
-    ```
-    python scripts/list_envs.py
-    ```
-## Repository organization
-This repository is an IsaacLab extension for training reinforcement learning (RL) agents on the CartPole task. It includes environment configurations, RL algorithms, and training scripts.
+which 
+- $\nabla_{\theta} J(\theta)$: radient of the expected return $J(\theta)$ with respect to policy parameters $\theta$
 
-```
-CARTPOLE
-├── source/CartPole
-│   ├── CartPole
-│       ├── tasks
-│           ├── cartpole
-│               ├── agents
-│               ├── mdp
-│               │   ├── __init__.py
-│               │   ├── actions.py
-│               │   ├── events.py
-│               │   ├── observation.py
-│               │   ├── rewards.py
-│               │   └── terminations.py
-│               ├── __init__.py
-│               ├── stabilize_cartpole_env_cfg.py
-│               └── swing_up_cartpole_env_cfg.py
-│               
-│  
-├── q_value
-│   ├── Stabilize
-│   │   ├── tasks
-│   │   ├── MC
-│   │   ├── Q_Learning
-│   │   └── SARSA
-│   └── SwingUp
-│  
-├── RL_Algorithm
-│   ├── Table_based             # Homework 2
-│   │   ├── Double_Q_Learning.py
-│   │   ├── MC.py
-│   │   ├── Q_Learning.py
-│   │   └── SARSA.py
-│   │   
-│   ├── Function_based          # Homework 3
-│   │   ├── DQN.py
-│   │   ├── Linear_Q.py
-│   │   └── MC_REINFORCE.py
-│   │   
-│   ├── RL_base.py              # Homework 2
-│   └── RL_base_function.py     # Homework 3
-│
-└── scripts
-    └── RL_Algorithm
-        ├── play.py
-        ├── random_action.py
-        └── train.py
-```
+- $\mathbb{E}[]$: Expectation over the distribution induced by the policy
 
-### Descriptions
+- $\log \pi(a \mid s; \theta)$: Log-probability of taking action $q$ under policy $\pi$
 
-- **source/CartPole:** Contains the core elements of the CartPole environments.
+- $G_t$: Return (e.g., cumulative discounted reward) starting from time $t$
 
-    - **mdp:** Implements key components of the Markov Decision Process (MDP) which includes actions, events, observations, rewards, and termination conditions.
+Learning policy is `stochastic` with supports both `discrete and continuous` in action spaces by choosing an appropriate distribution (softmax of gaussian) and can be `continuous and discrete` observation spaces. Exploration is sampling from the stochastic policy supplies intrinsic exploration; entropy bonus often added to delay premature exploitation  
 
-    - **__init__.py:** Contains the gym registry
-    code that registers your environments with the `OpenAI Gym interface`. This registration makes your environments compatible with standard RL libraries and algorithms (please consults this [tutorial](https://isaac-sim.github.io/IsaacLab/main/source/tutorials/03_envs/register_rl_env_gym.html#using-the-gym-registry) for more information).
+### Advantage Actor‑Critic (A2C)
+Actor-Critic method is the `combination between value-based and policy-based`. The actor learns a `stochastic` policy  $\log \pi(a \mid s; \theta)$ (softmax for discrete or Gaussian for continuous actions),  while the critic estimates a value function $V(s; w)$
 
-    - **stabilize_cartpole_env_cfg.py / swing_up_cartpole_env_cfg.py:** `Manager-Based RL Environments` configuration for the stabilization task and swing-up task:
+$$A(s, a) = r + \gamma V(s'; w) - V(s; w) $$
 
-        - `Scene`
-
-        - `Action` 
-
-        - `Observation`
-
-        - `Event`
-
-        - `Reward`
-
-        - `Termination`
-
-- **q_value:** Stores the trained `Q-value tables` as `JSON files`. Each subdirectory corresponds to a different `Q-value tables` learned by algorithms.
-
-- **RL_Algorithm:** This is where you'll implement your reinforcement learning algorithms for Homeworks:
-
-    - **Table_based:** Contains separate implementations for each table-based RL approach that has to be modified for **Homework 2**:
-
-        - `Double Q-Learning`
-        
-        - `MC` (Monte-Carlo)
-
-        - `Q-Learning`
-
-        - `SARSA` 
-
-    - **Function_based:** Contains separate implementations for each function approximation-based RL approach that has to be modified for **Homework 3**:
-
-        - `AC`  (Actor-Critic)
-        
-        - `DQN`  (Deep Q-Network)
-
-        - `Linear_Q` (Linear Q-Learning)
-
-        - `MC_REINFORCE`
-
-    - **RL_base.py:** Provides the foundation classes with common methods for table-based RL approaches that has to be modified for **Homework 2** such as:
-
-        - `get_action`
-
-        - `decay_epsilon` 
-
-        - `save_model`
-
-        - `load_model`
-        
-        Please refer to this file for more details on these functions.
-
-    - **RL_base_function.py:** Provides the foundation classes with common methods such for function approximation-based RL approaches that has to be modified for **Homework 3** such as:
-
-        - `get_action`
-
-        - `decay_epsilon` 
-
-        In **Homework 3**, you need to write functions to save and load model by yourself.
-
-
-- **scripts/RL_Algorithm:** Contains executable scripts for:
-
-    - **train.py:** Runs the training process for your selected algorithm against a specific environment.
-
-    - **play.py:** Demonstrates the performance of a trained agent using saved Q-values.
- 
-    - **random_action.py:** Executes random actions in the environment to verify package installation.
-
-## Verifying CartPole installation
-
-### 1. Stabilizing Cart-Pole Task
-
-```
-python scripts/RL_Algorithm/random_action.py --task Stabilize-Isaac-Cartpole-v0
-```
-
-### 2. Swing-up Cart-Pole Task
-
-```
-python scripts/RL_Algorithm/random_action.py --task SwingUp-Isaac-Cartpole-v0
-```
+It uses the advantage reduces variance in policy gradient update. This approach handles `continuous or discrete` observation spaces and can applies both `continuous or discrete` in action spaces. Exploration comes from the randomness in policy $\pi$ often boosted by `entropy`. Exploitation is guided by the `critic`, helping the actor choose high-reward actions.  

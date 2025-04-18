@@ -126,11 +126,11 @@ class RewardsCfg:
     #     params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
     # )
 
-    swing_up = RewTerm(
-        func=mdp.swing_up,
-        weight=1.0,
-        params={"asset_cfg": SceneEntityCfg("robot")},
-    )
+    # swing_up = RewTerm(
+    #     func=mdp.swing_up,
+    #     weight=1.0,
+    #     params={"asset_cfg": SceneEntityCfg("robot")},
+    # )
 
 @configclass
 class TerminationsCfg:
