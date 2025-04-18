@@ -71,7 +71,11 @@ class ReplayBuffer:
         # next_state_batch = torch.cat(batch.next_state)
         # done_batch = torch.cat(batch.done)
         state_batch = torch.stack(batch.state).to(device)
+        # discreate
         action_batch = torch.tensor(batch.action, dtype=torch.long).to(device)
+        # continueous
+        # action_batch = torch.stack(batch.action).float().to(device)
+
         reward_batch = torch.tensor(batch.reward, dtype=torch.float32).to(device)
         next_state_batch = torch.stack(batch.next_state).to(device)
         done_batch = torch.tensor(batch.done, dtype=torch.float32).to(device)
@@ -182,16 +186,6 @@ class BaseAlgorithm():
         # self.epsilon = max(self.final_epsilon, self.epsilon * self.epsilon_decay)
         self.epsilon = max(self.epsilon * self.epsilon_decay, self.final_epsilon)
         return self.epsilon
-
-    # def decay_epsilon(self):
-    #     """
-    #     Decay epsilon value to reduce exploration over time.
-    #     """
-    #     if self.epsilon > self.final_epsilon:
-    #         self.epsilon -= self.epsilon_decay
-    #         self.epsilon = max(self.epsilon, self.final_epsilon)
-    #     return self.epsilon
-
 
     def save_w(self, path, filename):
         """

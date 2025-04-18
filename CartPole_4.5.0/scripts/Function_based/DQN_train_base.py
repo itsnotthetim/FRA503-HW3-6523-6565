@@ -109,10 +109,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     n_observations = 4
     hidden_dim = 64
     dropout= 0.5
-    learning_rate= 0.1
+    learning_rate= 0.01
     tau = 0.005
     initial_epsilon = 1.0
-    epsilon_decay = 0.99999
+    epsilon_decay = 0.99997
     final_epsilon = 0.1
     discount_factor = 0.95
     buffer_size = 100000
@@ -136,7 +136,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "DQN_1.2"
+    name_train = "DQN_base"
     Algorithm_name = "DQN"
 
     agent = DQN(
@@ -178,6 +178,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             wandb.log({
                 "episode": episode,
                 "cumulative_reward": cumulative_reward,
+                "episode_reward": episode_reward,
                 "epsilon": agent.epsilon,
             })
 

@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 import wandb
 wandb.login(key="88baa274f550d2a9eee583bbb7bef8d179637368")
 
-from RL_Algorithm.Function_based.DQN import DQN
+from RL_Algorithm.Function_based.AC_DDPG import Actor_Critic
 
 from tqdm import tqdm
 
@@ -103,21 +103,18 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    device=None
-    num_of_action = 7
-    action_range = [-2.5, 2.5]
+    num_of_action= env.action_space.shape[0]
+    action_range= [-2.5, 2.5]
     n_observations = 4
-    hidden_dim = 64
-    dropout= 0.5
-    learning_rate= 0.1
+    hidden_dim = 256
+    dropout = 0.05
+    learning_rate = 1e-4
     tau = 0.005
-    initial_epsilon = 1.0
-    epsilon_decay = 0.99999
-    final_epsilon = 0.1
     discount_factor = 0.95
-    buffer_size = 100000
+    buffer_size = 256
     batch_size = 64
 
+    print(f"action space shape: {num_of_action}")
 
     # set up matplotlib
     is_ipython = 'inline' in matplotlib.get_backend()
@@ -136,10 +133,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "DQN_1.2"
-    Algorithm_name = "DQN"
+    name_train = "AC_DDPG_base"
+    Algorithm_name = "AC"
 
-    agent = DQN(
+    agent = Actor_Critic(
         device=device,
         num_of_action=num_of_action,
         action_range=action_range,
@@ -148,9 +145,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         dropout=dropout,
         tau=tau,
         hidden_dim=hidden_dim,
-        initial_epsilon=initial_epsilon,
-        epsilon_decay = epsilon_decay,
-        final_epsilon = final_epsilon,
         discount_factor = discount_factor,
         buffer_size = buffer_size,
         batch_size = batch_size,
@@ -178,7 +172,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             wandb.log({
                 "episode": episode,
                 "cumulative_reward": cumulative_reward,
-                "epsilon": agent.epsilon,
+                # "episode_length": len(trajectory),
             })
 
             sum_count += t

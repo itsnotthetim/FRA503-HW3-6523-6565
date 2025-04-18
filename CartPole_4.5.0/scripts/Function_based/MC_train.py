@@ -131,7 +131,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "MC_sum_count/10000"
+    name_train = "MC_test"
     Algorithm_name = "MC"
 
     agent = MC_REINFORCE(
@@ -177,7 +177,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
                 wandb.log({
                     "sum_reward": sum_reward / 100.0,
-                    "count": sum_count / 10000.0,
+                    "count": sum_count / 2000.0,
                     "loss": loss,
                 })
 

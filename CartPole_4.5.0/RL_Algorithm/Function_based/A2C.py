@@ -126,9 +126,14 @@ class ActorCriticA2C(BaseAlgorithm):
         done = False
         t = 0
 
+    
         while not done and t < max_steps:
             a, lp, v = self.select_action(state)
-            next_obs, r, terminated, truncated, _ = env.step(a)
+            # turn that int into the proper tensor shape
+            action_tensor = self.scale_action(a)        # shape: (1,)
+            action_tensor = action_tensor.unsqueeze(0)  # shape: (1,1)
+            action_tensor = action_tensor.to(self.device)
+            next_obs, r, terminated, truncated, _ = env.step(action_tensor)
             reward = float(r)
 
             log_probs.append(lp)
@@ -162,4 +167,4 @@ class ActorCriticA2C(BaseAlgorithm):
         loss.backward()
         self.optimizer.step()
 
-        return total_reward, t
+        return total_reward, actor_loss, critic_loss,loss, t

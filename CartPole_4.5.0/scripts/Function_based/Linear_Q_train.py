@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 import wandb
 wandb.login(key="88baa274f550d2a9eee583bbb7bef8d179637368")
 
-from RL_Algorithm.Function_based.Linear_Q_Fnc import Linear_Q 
+from RL_Algorithm.Function_based.Linear_Q import Linear_Q
 
 from tqdm import tqdm
 
@@ -103,17 +103,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    num_of_action = 5
+    num_of_action = 7
     action_range = [-2.5, 2.5]  
     learning_rate = 0.01
-    hidden_dim = None  # ไม่ได้ใช้ใน Linear Q
-    n_episodes = 5000
+    n_episodes = 2000
     initial_epsilon = 1.0
-    epsilon_decay = 0.001  
+    epsilon_decay = 0.999
     final_epsilon = 0.05
     discount = 0.95
-    buffer_size = 10000
-    batch_size = 32
 
 
     # set up matplotlib
@@ -133,21 +130,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "Linear_Q_1"
+    name_train = "Linear_Q_0.999"
     Algorithm_name = "Linear_Q"
 
     agent = Linear_Q(
-        # device=device,
         num_of_action=num_of_action,
         action_range=action_range,
         learning_rate=learning_rate,
-        # hidden_dim=hidden_dim,
         initial_epsilon = initial_epsilon,
         epsilon_decay = epsilon_decay,
         final_epsilon = final_epsilon,
         discount_factor = discount,
-        # buffer_size = buffer_size,
-        # batch_size = batch_size,
     )
 
     wandb.init(project="HW3", name=name_train)
@@ -155,31 +148,44 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # reset environment
     obs, _ = env.reset()
     timestep = 0
+    sum_count = 0
+    sum_reward = 0
+    # cumulative_reward = 0.0
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
         # with torch.inference_mode():
         
         for episode in tqdm(range(n_episodes)):
-            episode_reward = agent.learn(env, max_steps=500)
+            cumulative_reward, t, avg_loss = agent.learn(env, max_steps=500)
+            
             wandb.log({
                 "episode": episode,
-                "reward": episode_reward,
+                "cumulative_reward": cumulative_reward,
                 "epsilon": agent.epsilon,
-                "td_error": np.mean(agent.training_error[-10:]) if agent.training_error else 0.0
             })
 
+            sum_count += t
+            sum_reward += cumulative_reward
 
-        if episode % 100 == 0:
-            print(agent.epsilon)
+            if episode % 100 == 0:
+                print(agent.epsilon)
+                print(f"avg_score: {sum_reward / 100.0}")
 
-            # Save Q-Learning agent
-            w_file = f"{Algorithm_name}_{episode}_{num_of_action}_{action_range[1]}.json"
-            full_path = os.path.join(f"w/{task_name}", Algorithm_name)
-            agent.save_w(full_path, w_file)
+                wandb.log({
+                    "sum_reward": sum_reward / 100.0,
+                    "count": sum_count / 2000.0,
+                })
+
+                # Save Q-Learning agent
+                w_file = f"{Algorithm_name}_{episode}_{num_of_action}_{action_range[1]}.json"
+                full_path = os.path.join(f"w/{task_name}", Algorithm_name)
+                agent.save_w(full_path, w_file)
+                sum_count = 0
+                sum_reward = 0
         
         print('Complete')
-        agent.plot_durations(show_result=True)
+        # agent.plot_durations(show_result=True)
         plt.ioff()
         plt.show()
             

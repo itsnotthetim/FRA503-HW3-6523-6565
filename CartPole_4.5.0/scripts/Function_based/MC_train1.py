@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 import wandb
 wandb.login(key="88baa274f550d2a9eee583bbb7bef8d179637368")
 
-from RL_Algorithm.Function_based.DQN import DQN
+from RL_Algorithm.Function_based.MC_REINFORCE_test import MC_REINFORCE 
 
 from tqdm import tqdm
 
@@ -103,22 +103,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    device=None
+    device = None
     num_of_action = 7
     action_range = [-2.5, 2.5]
-    n_observations = 4
+    n_observations= 4
     hidden_dim = 64
-    dropout= 0.5
-    learning_rate= 0.1
-    tau = 0.005
-    initial_epsilon = 1.0
-    epsilon_decay = 0.99999
-    final_epsilon = 0.1
+    dropout = 0.5
+    learning_rate = 0.01
     discount_factor = 0.95
-    buffer_size = 100000
-    batch_size = 64
+    n_episodes = 2000
 
-
+    # print(f"action space dim: {env.action_space.shape[0]}")
     # set up matplotlib
     is_ipython = 'inline' in matplotlib.get_backend()
     if is_ipython:
@@ -136,52 +131,44 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "DQN_1.2"
-    Algorithm_name = "DQN"
+    name_train = "MC_sum_count/10000"
+    Algorithm_name = "MC"
 
-    agent = DQN(
+    agent = MC_REINFORCE(
         device=device,
         num_of_action=num_of_action,
-        action_range=action_range,
-        learning_rate=learning_rate,
         n_observations=n_observations,
-        dropout=dropout,
-        tau=tau,
         hidden_dim=hidden_dim,
-        initial_epsilon=initial_epsilon,
-        epsilon_decay = epsilon_decay,
-        final_epsilon = final_epsilon,
-        discount_factor = discount_factor,
-        buffer_size = buffer_size,
-        batch_size = batch_size,
+        dropout=dropout,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor
     )
     wandb.init(project="HW3", name=name_train)
 
     # reset environment
     obs, _ = env.reset()
     timestep = 0
-    sum_reward = 0
     sum_count = 0
-    cumulative_reward = 0.0
-    n_episodes = 2000
-
+    sum_reward = 0
+    cumulative_reward = 0
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
         # with torch.inference_mode():
         
         for episode in tqdm(range(n_episodes)):
-            episode_reward , t = agent.learn(env, max_steps=500)
+            episode_reward, loss, trajectory, count = agent.learn(env)
+            # print(f"episode_reward: {episode_reward} and trajectory: {trajectory}" )
 
             cumulative_reward += episode_reward
 
             wandb.log({
                 "episode": episode,
                 "cumulative_reward": cumulative_reward,
-                "epsilon": agent.epsilon,
+                "episode_length": len(trajectory),
             })
 
-            sum_count += t
+            sum_count += count
             sum_reward += episode_reward
 
             if episode % 100 == 0:
@@ -190,7 +177,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
                 wandb.log({
                     "sum_reward": sum_reward / 100.0,
-                    "count": sum_count / 2000.0,
+                    "count": sum_count / 10000.0,
+                    "loss": loss,
                 })
 
                 # Save Q-Learning agent
@@ -218,7 +206,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # close the simulator
     env.close()
     wandb.finish()
-
 
 if __name__ == "__main__":
     # run the main function

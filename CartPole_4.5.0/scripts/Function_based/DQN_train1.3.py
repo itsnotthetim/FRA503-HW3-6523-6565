@@ -112,7 +112,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     learning_rate= 0.1
     tau = 0.005
     initial_epsilon = 1.0
-    epsilon_decay = 0.99999
+    epsilon_decay = 0.99998
     final_epsilon = 0.1
     discount_factor = 0.95
     buffer_size = 100000
@@ -136,7 +136,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     print("device: ", device)
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "DQN_1.2"
+    name_train = "DQN_1.3"
     Algorithm_name = "DQN"
 
     agent = DQN(

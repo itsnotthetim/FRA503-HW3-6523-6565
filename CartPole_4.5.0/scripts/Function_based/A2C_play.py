@@ -10,10 +10,7 @@ from isaaclab.app import AppLauncher
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-import wandb
-wandb.login(key="88baa274f550d2a9eee583bbb7bef8d179637368")
-
-from RL_Algorithm.Function_based.DQN import DQN
+from RL_Algorithm.Function_based import DQN
 
 from tqdm import tqdm
 
@@ -103,20 +100,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    device=None
-    num_of_action = 7
-    action_range = [-2.5, 2.5]
-    n_observations = 4
-    hidden_dim = 64
-    dropout= 0.5
-    learning_rate= 0.1
-    tau = 0.005
-    initial_epsilon = 1.0
-    epsilon_decay = 0.99999
-    final_epsilon = 0.1
-    discount_factor = 0.95
-    buffer_size = 100000
-    batch_size = 64
+    num_of_action = None
+    action_range = [None, None]  
+    learning_rate = None
+    hidden_dim = None
+    n_episodes = None
+    initial_epsilon = None
+    epsilon_decay = None  
+    final_epsilon = None
+    discount = None
+    buffer_size = None
+    batch_size = None
 
 
     # set up matplotlib
@@ -135,76 +129,48 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     print("device: ", device)
 
-    task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    name_train = "DQN_1.2"
-    Algorithm_name = "DQN"
-
     agent = DQN(
         device=device,
         num_of_action=num_of_action,
         action_range=action_range,
         learning_rate=learning_rate,
-        n_observations=n_observations,
-        dropout=dropout,
-        tau=tau,
         hidden_dim=hidden_dim,
-        initial_epsilon=initial_epsilon,
+        initial_epsilon = initial_epsilon,
         epsilon_decay = epsilon_decay,
         final_epsilon = final_epsilon,
-        discount_factor = discount_factor,
+        discount_factor = discount,
         buffer_size = buffer_size,
         batch_size = batch_size,
     )
-    wandb.init(project="HW3", name=name_train)
+
+    task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
+    Algorithm_name = "DQN"  
+    episode = 0
+    q_value_file = f"{Algorithm_name}_{episode}_{num_of_action}_{action_range[1]}.json"
+    full_path = os.path.join(f"w/{task_name}", Algorithm_name)
+    agent.load_w(full_path, q_value_file)
 
     # reset environment
     obs, _ = env.reset()
     timestep = 0
-    sum_reward = 0
-    sum_count = 0
-    cumulative_reward = 0.0
-    n_episodes = 2000
-
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
-        # with torch.inference_mode():
+        with torch.inference_mode():
         
-        for episode in tqdm(range(n_episodes)):
-            episode_reward , t = agent.learn(env, max_steps=500)
+            for episode in range(n_episodes):
+                obs, _ = env.reset()
+                done = False
 
-            cumulative_reward += episode_reward
+                while not done:
+                    # agent stepping
+                    action, action_idx = agent.get_action(obs)
 
-            wandb.log({
-                "episode": episode,
-                "cumulative_reward": cumulative_reward,
-                "epsilon": agent.epsilon,
-            })
+                    # env stepping
+                    next_obs, reward, terminated, truncated, _ = env.step(action)
 
-            sum_count += t
-            sum_reward += episode_reward
-
-            if episode % 100 == 0:
-
-                print(f"avg_score: {sum_reward / 100.0}")
-
-                wandb.log({
-                    "sum_reward": sum_reward / 100.0,
-                    "count": sum_count / 2000.0,
-                })
-
-                # Save Q-Learning agent
-                w_file = f"{Algorithm_name}_{episode}_{num_of_action}_{action_range[1]}.json"
-                full_path = os.path.join(f"w/{task_name}", Algorithm_name)
-                agent.save_w(full_path, w_file)
-
-                sum_count = 0
-                sum_reward = 0
-            
-        print('Complete')
-        agent.plot_durations(show_result=True)
-        plt.ioff()
-        plt.show()
+                    done = terminated or truncated
+                    obs = next_obs
             
         if args_cli.video:
             timestep += 1
@@ -217,8 +183,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # close the simulator
     env.close()
-    wandb.finish()
-
 
 if __name__ == "__main__":
     # run the main function

@@ -10,7 +10,7 @@ from isaaclab.app import AppLauncher
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from RL_Algorithm.Function_based import DQN
+from RL_Algorithm.Function_based.MC_REINFORCE_test import MC_REINFORCE
 
 from tqdm import tqdm
 
@@ -100,17 +100,15 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    num_of_action = None
-    action_range = [None, None]  
-    learning_rate = None
-    hidden_dim = None
-    n_episodes = None
-    initial_epsilon = None
-    epsilon_decay = None  
-    final_epsilon = None
-    discount = None
-    buffer_size = None
-    batch_size = None
+    device = None
+    num_of_action = 7
+    action_range = [-2.5, 2.5]
+    n_observations= 4
+    hidden_dim = 64
+    dropout = 0.5
+    learning_rate = 0.01
+    discount_factor = 0.99
+    n_episodes = 2000
 
 
     # set up matplotlib
@@ -129,23 +127,19 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     print("device: ", device)
 
-    agent = DQN(
+    agent = MC_REINFORCE(
         device=device,
         num_of_action=num_of_action,
-        action_range=action_range,
-        learning_rate=learning_rate,
+        n_observations=n_observations,
         hidden_dim=hidden_dim,
-        initial_epsilon = initial_epsilon,
-        epsilon_decay = epsilon_decay,
-        final_epsilon = final_epsilon,
-        discount_factor = discount,
-        buffer_size = buffer_size,
-        batch_size = batch_size,
+        dropout=dropout,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor
     )
 
     task_name = str(args_cli.task).split('-')[0]  # Stabilize, SwingUp
-    Algorithm_name = "DQN"  
-    episode = 0
+    Algorithm_name = "MC"  
+    episode = 1900
     q_value_file = f"{Algorithm_name}_{episode}_{num_of_action}_{action_range[1]}.json"
     full_path = os.path.join(f"w/{task_name}", Algorithm_name)
     agent.load_w(full_path, q_value_file)
@@ -164,7 +158,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
                 while not done:
                     # agent stepping
-                    action, action_idx = agent.get_action(obs)
+                    action = agent.scale_action(obs)
 
                     # env stepping
                     next_obs, reward, terminated, truncated, _ = env.step(action)

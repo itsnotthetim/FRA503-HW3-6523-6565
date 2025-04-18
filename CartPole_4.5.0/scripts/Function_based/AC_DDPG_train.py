@@ -103,7 +103,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # ========================= Can be modified ========================== #
 
     # hyperparameters
-    num_of_action= env.action_space.shape[0]
+    num_of_action= 1
     action_range= [-2.5, 2.5]
     n_observations = 4
     hidden_dim = 256
