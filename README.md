@@ -114,7 +114,9 @@ This case is happen because...
 
 #### 2.3.2 `Advantage Actor‑Critic (A2C)`
 
+![A2C_base](image/A2C_base.png)
 
+https://github.com/user-attachments/assets/19f0eb07-e47c-4412-be3c-08737f9b5b55
 
 ### **2.4 Which algorithm performs best?**
 From sum_reward graph. The algorithm that have the best performe is `Advantage Actor‑Critic (A2C)` 
