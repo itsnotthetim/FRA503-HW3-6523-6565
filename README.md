@@ -110,13 +110,26 @@ but when sum_reward drop under 400 Cart still can stabilize pole but cart start 
 
 https://github.com/user-attachments/assets/f7d1f99f-e923-418d-b2ea-1a9a16d3136e
 
-This case is happen because...
+This case is happen because as you've seen the `sum_reward` which has some the lowest valley called **local optima**. My assumption goes to the initial state when it randomed the pole closes to the 0 radient and it can survive longer (get more reward). So the algorithm just has the strategy that only **good enough** but not exploring the **best strategy** (or the robust one). 
+
+From the loss graph show that when the sum_reward per episode is high, loss is low.
+
 
 #### 2.3.2 `Advantage Actor‑Critic (A2C)`
 
 ![A2C_base](image/A2C_base.png)
 
 https://github.com/user-attachments/assets/19f0eb07-e47c-4412-be3c-08737f9b5b55
+
+As you can see from the video that Cartpole can stabilize upward but still slip onto the right and run out of the rail. Meanwhile From the `sum_reward` graph, There is a tendency to increase continuously. It's caused from the serveral reasons. One of them is from the learning of algorithm that think it was the best strategy to balance the pole. Or the reward function aims to stabilze the cartpole (radient equal to zero) with not covering to control the cart within range of the rail. This is the reason why `sum_reward` increased and the cart sliped out of the rail. 
+
+From the loss graph: 
+- At 0-600 step, actor‑loss swings between ≈ +30 and –20.
+Critic‑loss and total‑loss spike into the thousands, then begin to slope downward. The policy is still random. Episodes are short (the pole falls quickly). The critic keeps guessing the remaining lifetime of the episode and is usually wrong.
+
+- At 600-1000 step, Both losses decrease sharply. Actor‑loss fluctuations squeeze into a ±5 band, critic‑loss collapses toward 0. The agent has discovered a `stable balancing routine`. 
+
+- After 1000, Losses around near zero with only thin noise; two tall critic‑loss spikes re‑appear around step 1 500. CartPole is basically solved (in term of stabilizing) but the rare spike might come from random early termination (ran out of the rail) or an exploratory action.  
 
 ### **2.4 Which algorithm performs best?**
 From sum_reward graph. The algorithm that have the best performe is `Advantage Actor‑Critic (A2C)` 
