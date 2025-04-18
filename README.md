@@ -4,9 +4,9 @@ Similar to the previous homework, this assignment focuses on the **Stabilizing C
 
 Additionally, as in the previous homework, the `CartPole` extension repository includes configurations for the **Swing-up Cart-Pole Task** as an optional resource for students seeking a more challenging task.
 
-## Table of Contents
+## **Table of Contents**
 - [FRA503-HW3: Cart Pole \[ HW3 \]](#fra503-hw3-cart-pole--hw3-)
-  - [Table of Contents](#table-of-contents)
+  - [**Table of Contents**](#table-of-contents)
   - [Learning Objectives:](#learning-objectives)
   - [Part 1: Understanding the Algorithm](#part-1-understanding-the-algorithm)
     - [Linear Q-Learning](#linear-q-learning)
@@ -23,6 +23,7 @@ Additionally, as in the previous homework, the `CartPole` extension repository i
       - [2.3.2 `Advantage Actor‑Critic (A2C)`](#232-advantage-actorcritic-a2c)
     - [**2.4 Which algorithm performs best?**](#24-which-algorithm-performs-best)
     - [**2.5 Why does `Advantage Actor‑Critic (A2C)` perform better than the others?**](#25-why-does-advantage-actorcritic-a2c-perform-better-than-the-others)
+  - [**Contributors**](#contributors)
 
 
 ## Learning Objectives:
@@ -217,3 +218,7 @@ In video you will see `Advantage Actor‑Critic (A2C)` and `REINFORCE (Monte Car
     - Not always picking the greedy action
 
     - Enables smooth exploration without tricks like epsilon-greedy (used in Q-learning or DQN)
+
+## **Contributors**
+1. **Natthaphat Sookpanya 65340500023**
+2. **Karanyaphas Chitsuebsai 65340500065**
